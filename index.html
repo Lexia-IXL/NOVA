@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA — Video</title>
+<style>
+:root {
+  --bg: #0b0b10;
+  --panel: #15151e;
+  --accent: #8b5cf6;
+  --text: #fff;
+  --muted: #9999aa;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  background: #101017;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #252530;
+}
+.logo {
+  font-size: 25px;
+  font-weight: 900;
+  color: #a78bfa;
+  letter-spacing: 2px;
+}
+.search {
+  display: flex;
+  flex: 1;
+  max-width: 650px;
+  margin: auto;
+}
+.search input {
+  width: 100%;
+  background: #20202b;
+  border: 1px solid #383846;
+  padding: 13px;
+  color: white;
+  border-radius: 8px 0 0 8px;
+  outline: none;
+}
+button {
+  cursor: pointer;
+  border: none;
+  background: var(--accent);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 7px;
+  font-weight: bold;
+}
+.search button { border-radius: 0 8px 8px 0; }
+.layout {
+  display: flex;
+  min-height: calc(100vh - 68px);
+}
+aside {
+  width: 210px;
+  padding: 20px 12px;
+  border-right: 1px solid #252530;
+  flex-shrink: 0;
+}
+.nav {
+  display: block;
+  padding: 14px;
+  margin-bottom: 5px;
+  color: #ccc;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.nav:hover, .nav.active {
+  background: #252033;
+  color: white;
+}
+main {
+  flex: 1;
+  padding: 28px;
+  min-width: 0;
+}
+h1 { font-size: 27px; }
+.subtitle { color: var(--muted); }
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 25px 0;
+}
+.categories button {
+  background: #22222e;
+}
+.categories button:hover { background: #39304f; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+  gap: 22px;
+}
+.card {
+  background: var(--panel);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: .2s;
+}
+.card:hover { transform: translateY(-4px); }
+.thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: #252530;
+}
+.card-info { padding: 13px; }
+.card h3 { font-size: 15px; margin: 0 0 8px; }
+.card p { font-size: 12px; color: var(--muted); }
+.player {
+  display: none;
+  margin-bottom: 30px;
+}
+.player iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: none;
+  border-radius: 12px;
+}
+.player button { margin-top: 12px; }
+footer {
+  padding: 25px;
+  text-align: center;
+  color: var(--muted);
+  border-top: 1px solid #252530;
+}
+@media(max-width:700px) {
+  aside { width: 65px; }
+  .nav { font-size: 0; text-align: center; }
+  main { padding: 16px; }
+  header { padding: 0 12px; gap: 10px; }
+  .logo { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NOVA</div>
+  <form class="search" id="searchForm">
+    <input id="searchInput" placeholder="Search YouTube videos...">
+    <button type="submit">Search</button>
+  </form>
+</header>
+
+<div class="layout">
+  <aside>
+    <a class="nav active" href="#">⌂ Home</a>
+    <a class="nav" href="#videos">▣ Explore</a>
+    <a class="nav" href="#categories">◈ Categories</a>
+    <a class="nav" href="https://www.youtube.com/" target="_blank" rel="noopener">▶ YouTube</a>
+  </aside>
+
+  <main>
+    <section class="player" id="player">
+      <iframe id="videoFrame"
+        title="YouTube video player"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+      <button onclick="closePlayer()">Close player</button>
+    </section>
+
+    <h1>Discover videos.</h1>
+    <p class="subtitle">Your video discovery homepage.</p>
+
+    <div class="categories" id="categories">
+      <button onclick="searchCategory('Gaming')">Gaming</button>
+      <button onclick="searchCategory('Sports')">Sports</button>
+      <button onclick="searchCategory('Music')">Music</button>
+      <button onclick="searchCategory('Technology')">Technology</button>
+      <button onclick="searchCategory('Education')">Education</button>
+    </div>
+
+    <h2 id="videos">Featured videos</h2>
+    <div class="grid" id="videoGrid"></div>
+  </main>
+</div>
+
+<footer>NOVA Video Platform</footer>
+
+<script>
+const videos = [
+  {
+    title: "Big Buck Bunny",
+    channel: "Blender Foundation",
+    id: "aqz-KE-bpKQ"
+  },
+  {
+    title: "Elephants Dream",
+    channel: "Blender Foundation",
+    id: "eRsGyueVLvQ"
+  },
+  {
+    title: "For Bigger Blazes",
+    channel: "Google",
+    id: "DrqkZr5Z5rI"
+  }
+];
+
+const grid = document.getElementById("videoGrid");
+
+videos.forEach(video => {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const image = document.createElement("img");
+  image.className = "thumb";
+  image.src = "https://img.youtube.com/vi/" +
+    encodeURIComponent(video.id) + "/hqdefault.jpg";
+  image.alt = video.title;
+
+  const info = document.createElement("div");
+  info.className = "card-info";
+
+  const title = document.createElement("h3");
+  title.textContent = video.title;
+
+  const channel = document.createElement("p");
+  channel.textContent = video.channel;
+
+  info.append(title, channel);
+  card.append(image, info);
+  card.onclick = () => playVideo(video.id);
+  grid.appendChild(card);
+});
+
+function playVideo(id) {
+  document.getElementById("player").style.display = "block";
+  document.getElementById("videoFrame").src =
+    "https://www.youtube-nocookie.com/embed/" +
+    encodeURIComponent(id);
+  document.getElementById("player").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+function closePlayer() {
+  document.getElementById("videoFrame").src = "";
+  document.getElementById("player").style.display = "none";
+}
+
+document.getElementById("searchForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const query = document.getElementById("searchInput").value.trim();
+  if (!query) return;
+
+  window.open(
+    "https://www.youtube.com/results?search_query=" +
+    encodeURIComponent(query),
+    "_blank",
+    "noopener"
+  );
+});
+
+function searchCategory(category) {
+  document.getElementById("searchInput").value = category;
+  window.open(
+    "https://www.youtube.com/results?search_query=" +
+    encodeURIComponent(category),
+    "_blank",
+    "noopener"
+  );
+}
+</script>
+</body>
+</html>
